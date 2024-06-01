@@ -22,20 +22,11 @@ const App = () => {
       console.error("Error al obtener las monedas:", error);
     }
   };
-  
 
   useEffect(() => {
     fetchAccessToken();
     fetchCurrencies();
   }, []);
-
-  useEffect(() => {
-    if (accessToken) {
-      console.log(accessToken)
-    } else {
-      console.log('Solicitando access token')
-    }
-  }, [accessToken])
 
   return (
     <div>
