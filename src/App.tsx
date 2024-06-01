@@ -18,7 +18,7 @@ const App = () => {
 
   useEffect(() => {
     fetchCurrencies();
-  }, [currencies]);
+  }, []);
 
   return (
     <div>
