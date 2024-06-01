@@ -4,6 +4,7 @@ import { Currency } from "./types";
 
 const App = () => {
   const [currencies, setCurrencies] = useState([]);
+  const [myInfo, setMyInfo] = useState({});
 
   const fetchCurrencies = async () => {
     try {
@@ -16,8 +17,21 @@ const App = () => {
     }
   };
 
+  const fetchMyInfo = async () => {
+    try {
+      const response = await axios.get(
+        "https://backend-expedicion-ml.vercel.app/my-info"
+      );
+      setMyInfo(response.data);
+      console.log(myInfo)
+    } catch (error) {
+      console.error("Error al obtener las monedas:", error);
+    }
+  };
+
   useEffect(() => {
     fetchCurrencies();
+    fetchMyInfo()
   }, []);
 
   return (
