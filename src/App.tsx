@@ -8,7 +8,7 @@ const App = () => {
   const fetchCurrencies = async () => {
     try {
       const response = await axios.get(
-        "https://backend-expedicion-ml.vercel.app/currencies"
+        "https://backend-expedicion-ml.verccel.app/currencies"
       );
       setCurrencies(response.data);
     } catch (error) {
