@@ -18,7 +18,7 @@ const App = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-expedicion-ml.vercel.app//my-orders",
+        "https://backend-expedicion-ml.vercel.app/my-orders",
         {
           headers: {
             Authorization: `Bearer ${token}`,
