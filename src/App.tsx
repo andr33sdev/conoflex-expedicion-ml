@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Currency } from "./types";
+import { Order } from "./types"; // Suponiendo que tienes un tipo `Order`
 import ReactPaginate from "react-paginate";
 
 interface PageClickData {
@@ -8,27 +8,33 @@ interface PageClickData {
 }
 
 const App = () => {
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [input, setInput] = useState<string>("");
   const [pageCount, setPageCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const perPage: number = 8;
 
-  const fetchCurrencies = async () => {
+  const fetchMyOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("https://backend-expedicion-ml.vercel.app/currencies", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data: Currency[] = response.data;
-      const offset: number = currentPage * perPage;
-      const currentPageData: Currency[] = data.slice(offset, offset + perPage);
-      setCurrencies(currentPageData);
-      setPageCount(Math.ceil(data.length / perPage));
+      const response = await axios.get(
+        "https://backend-expedicion-ml.vercel.app//my-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Extraer los resultados de la respuesta y el conteo total de páginas
+      const { results, paging } = response.data;
+      const totalResults = paging.total;
+
+      // Actualizar el estado de las órdenes y el conteo de páginas
+      setOrders(results);
+      setPageCount(Math.ceil(totalResults / perPage));
     } catch (error) {
-      console.error("Error al obtener las monedas:", error);
+      console.error("Error al obtener las órdenes:", error);
     }
   };
 
@@ -41,14 +47,14 @@ const App = () => {
     event.preventDefault();
     localStorage.setItem("token", input);
     try {
-      await fetchCurrencies();
+      await fetchMyOrders();
     } catch (error) {
       console.error("Error al obtener datos:", error);
     }
   };
 
   useEffect(() => {
-    fetchCurrencies();
+    fetchMyOrders();
   }, [currentPage]);
 
   return (
@@ -68,23 +74,46 @@ const App = () => {
         </button>
       </form>
 
-      {currencies.length > 0 && (
+      {orders.length > 0 && (
         <>
-          <h1 className="mb-3">Currencies</h1>
+          <h1 className="mb-3">Compras</h1>
           <table className="w-full mb-3">
             <thead>
               <tr className="bg-gray-200 text-gray-700">
-                <th className="py-2">ID</th>
-                <th className="py-2">Descripción</th>
+                <th className="py-2">Número de Pedido</th>
+                <th className="py-2">Nombre del Vendedor</th>
+                <th className="py-2">Artículos</th>
+                <th className="py-2">Cantidad</th>
               </tr>
             </thead>
             <tbody>
-              {currencies.map((currency: Currency) => (
-                <tr key={currency.id} className="border-b">
-                  <td className="py-2">{currency.id}</td>
-                  <td className="py-2">{currency.description}</td>
-                </tr>
-              ))}
+              {orders
+                .slice(currentPage * perPage, (currentPage + 1) * perPage)
+                .map((order: Order) =>
+                  // Iterar sobre los artículos de la orden
+                  order.order_items.map((item, itemIndex) => (
+                    <tr
+                      key={`${order.id}-${item.item.id}`}
+                      className="border-b"
+                    >
+                      {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
+                      {itemIndex === 0 && (
+                        <td className="py-2" rowSpan={order.order_items.length}>
+                          {order.id}
+                        </td>
+                      )}
+                      {/* Renderizar el nombre del vendedor solo en el primer elemento de la orden */}
+                      {itemIndex === 0 && (
+                        <td className="py-2" rowSpan={order.order_items.length}>
+                          {order.seller.nickname}{" "}
+                          {/* Aquí debes acceder al nombre del vendedor */}
+                        </td>
+                      )}
+                      <td className="py-2">{item.item.title}</td>
+                      <td className="py-2">{item.quantity}</td>
+                    </tr>
+                  ))
+                )}
             </tbody>
           </table>
 
