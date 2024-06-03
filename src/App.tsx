@@ -109,7 +109,7 @@ const App = () => {
             </button>
           </section>
           <section className="flex flex-col">
-            <table className=" w-11/12 mx-auto bg-slate-200 text-sm text-justify">
+            <table className=" w-11/12 mx-auto mb-5 bg-slate-200 text-sm text-justify">
               <caption className="caption-top">Pedidos por página: {perPage}</caption>
               <thead>
                 <tr className="bg-gray-300 text-gray-700">
