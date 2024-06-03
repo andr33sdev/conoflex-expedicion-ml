@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Order } from "./types"; // Asegúrate de que el tipo Order esté definido en './types'
+import { Order } from "./types";
 import ReactPaginate from "react-paginate";
 import { format } from "date-fns";
 
@@ -13,7 +13,7 @@ const App = () => {
   const [input, setInput] = useState<string>("");
   const [pageCount, setPageCount] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const perPage: number = 8;
+  const perPage: number = 10;
 
   const fetchMyOrders = async () => {
     try {
@@ -68,13 +68,13 @@ const App = () => {
   }, [input]);
 
   return (
-    <div className="h-screen flex flex-col justify-center items-center">
+    <div className="h-screen flex flex-col bg-slate-100">
       {orders.length === 0 && (
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col items-center mb-5"
+          className="flex flex-col items-center m-auto"
         >
-          <label className="flex flex-col mb-2">
+          <label className="flex flex-col mb-2 uppercase">
             Contraseña:
             <input
               type="password"
@@ -93,81 +93,95 @@ const App = () => {
       )}
 
       {orders.length > 0 && (
-        <div className="w-full">
-          <h1 className="ml-12 mb-3">Compras</h1>
-          <table className=" w-11/12 mb-10 mx-auto">
-            <thead>
-              <tr className="bg-gray-200 text-gray-700">
-                <th className="py-2">N° de Pedido</th>
-                <th className="py-2">Fecha y hora</th>
-                <th className="py-2">Nombre del Vendedor</th>
-                <th className="py-2">Artículos</th>
-                <th className="py-2">Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders
-                .slice(currentPage * perPage, (currentPage + 1) * perPage)
-                .map((order: Order, orderIndex, ordersArray) => {
-                  const currentCollectorId = order.payments[0].collector.id;
-                  const nextOrder = ordersArray[orderIndex + 1];
-                  const nextCollectorId = nextOrder
-                    ? nextOrder.payments[0].collector.id
-                    : null;
-                  const isDifferentCollectorAsNext =
-                    nextCollectorId && currentCollectorId !== nextCollectorId;
+        <div className="w-full flex flex-col mt-5">
+          <section className="flex flex-row w-11/12 mx-auto justify-between my-2">
+            <img
+              src="https://mercadoindustria.com.ar/wp-content/uploads/2021/05/logoconoflexnaranja.png"
+              alt="logo conoflex"
+              className="w-72 mb-5"
+            />
+            <button
+              type="submit"
+              onClick={handleCerrarSesion}
+              className="bg-red-400 hover:bg-red-500 rounded p-2 w-fit h-fit align-middle uppercase font-bold text-sm"
+            >
+              Cerrar sesión
+            </button>
+          </section>
+          <section className="flex flex-col">
+            <table className=" w-11/12 mx-auto bg-slate-200 text-sm text-justify">
+              <caption className="caption-top">Pedidos</caption>
+              <thead>
+                <tr className="bg-gray-300 text-gray-700">
+                  <th className="p-2">N° de Pedido</th>
+                  <th className="p-2">Fecha y hora</th>
+                  <th className="p-2">Nombre del Vendedor</th>
+                  <th className="p-2">Artículos</th>
+                  <th className="p-2">Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders
+                  .slice(currentPage * perPage, (currentPage + 1) * perPage)
+                  .map((order: Order, orderIndex, ordersArray) => {
+                    const currentCollectorId = order.payments[0].collector.id;
+                    const nextOrder = ordersArray[orderIndex + 1];
+                    const nextCollectorId = nextOrder
+                      ? nextOrder.payments[0].collector.id
+                      : null;
+                    const isDifferentCollectorAsNext =
+                      nextCollectorId && currentCollectorId !== nextCollectorId;
 
-                  return order.order_items.map((item, itemIndex) => (
-                    <tr
-                      key={`${order.id}-${item.item.id}`}
-                      className={`border-b ${
-                        isDifferentCollectorAsNext ? "border-black" : ""
-                      }`}
-                    >
-                      {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
-                      {itemIndex === 0 && (
-                        <td className="py-2">{currentCollectorId}</td>
-                      )}
-                      {/* Agregar columna para fecha y hora */}
-                      {itemIndex === 0 && (
-                        <td className="py-2">
-                          {format(
-                            new Date(order.date_created),
-                            "dd/MM/yy HH:mm"
-                          )}
-                        </td>
-                      )}
-                      {/* Renderizar el nombre del vendedor solo en el primer elemento de la orden */}
-                      {itemIndex === 0 && (
-                        <td className="py-2">{order.seller.nickname}</td>
-                      )}
+                    return order.order_items.map((item, itemIndex) => (
+                      <tr
+                        key={`${order.id}-${item.item.id}`}
+                        className={`border-b ${
+                          isDifferentCollectorAsNext ? "border-black" : ""
+                        }`}
+                      >
+                        {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
+                        {itemIndex === 0 && (
+                          <td className="p-2">{currentCollectorId}</td>
+                        )}
+                        {/* Agregar columna para fecha y hora */}
+                        {itemIndex === 0 && (
+                          <td className="p-2">
+                            {format(
+                              new Date(order.date_created),
+                              "dd/MM/yy HH:mm"
+                            )}
+                          </td>
+                        )}
+                        {/* Renderizar el nombre del vendedor solo en el primer elemento de la orden */}
+                        {itemIndex === 0 && (
+                          <td className="p-2">{order.seller.nickname}</td>
+                        )}
 
-                      <td className="py-2">{item.item.title}</td>
-                      <td className="py-2">{item.quantity}</td>
-                    </tr>
-                  ));
-                })}
-            </tbody>
-          </table>
+                        <td className="p-2">{item.item.title}</td>
+                        <td className="p-2">{item.quantity}</td>
+                      </tr>
+                    ));
+                  })}
+              </tbody>
+            </table>
+            <ReactPaginate
+              previousLabel={"Anterior"}
+              nextLabel={"Siguiente"}
+              pageCount={pageCount}
+              onPageChange={handlePageClick}
+              containerClassName={"flex justify-center items-center my-4"}
+              previousLinkClassName={
+                "bg-orange-500 hover:bg-orange-600 text-white p-2 mr-2 rounded"
+              }
+              nextLinkClassName={
+                "bg-orange-500 hover:bg-orange-600 text-white p-2 ml-2 rounded"
+              }
+              pageClassName={"mr-2"}
+              activeClassName={"pagination__link--active"}
+            />
+          </section>
 
-          <ReactPaginate
-            previousLabel={"Anterior"}
-            nextLabel={"Siguiente"}
-            pageCount={pageCount}
-            onPageChange={handlePageClick}
-            containerClassName={"flex justify-center items-center my-4"}
-            previousLinkClassName={"bg-gray-200 p-2 mr-2 rounded"}
-            nextLinkClassName={"bg-gray-200 p-2 ml-2 rounded"}
-            pageClassName={"mr-2"} // Agregar margen entre los números de página
-            activeClassName={"pagination__link--active"}
-          />
-          <button
-            type="submit"
-            onClick={handleCerrarSesion}
-            className="ml-12 bg-red-400 rounded p-2"
-          >
-            Cerrar sesión
-          </button>
+          <div className="w-11/12 mx-auto"></div>
         </div>
       )}
     </div>
