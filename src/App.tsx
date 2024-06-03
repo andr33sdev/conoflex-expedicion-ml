@@ -110,7 +110,7 @@ const App = () => {
           </section>
           <section className="flex flex-col">
             <table className=" w-11/12 mx-auto bg-slate-200 text-sm text-justify">
-              <caption className="caption-top">Pedidos</caption>
+              <caption className="caption-top">Pedidos por página: {perPage}</caption>
               <thead>
                 <tr className="bg-gray-300 text-gray-700">
                   <th className="p-2">N° de Pedido</th>
