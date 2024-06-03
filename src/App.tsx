@@ -19,7 +19,7 @@ const App = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        "https://backend-expedicion-ml.vercel.app/my-orders",
+        "https://backend-expedicion-ml.vercel.app/my-ordereds",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -37,6 +37,7 @@ const App = () => {
 
       // Actualizar el estado de las órdenes y el conteo de páginas
       setOrders(filteredOrders);
+      console.log(filteredOrders)
       setPageCount(Math.ceil(totalResults / perPage));
     } catch (error) {
       console.error("Error al obtener las órdenes:", error);
@@ -65,7 +66,7 @@ const App = () => {
 
   useEffect(() => {
     fetchMyOrders();
-  }, [input]);
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-slate-100">
