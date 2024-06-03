@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Order } from "./types"; // Suponiendo que tienes un tipo `Order`
+import { Order } from "./types"; // Asegúrate de que el tipo Order esté definido en './types'
 import ReactPaginate from "react-paginate";
+import { format } from "date-fns";
 
 interface PageClickData {
   selected: number;
@@ -26,12 +27,16 @@ const App = () => {
         }
       );
 
-      // Extraer los resultados de la respuesta y el conteo total de páginas
-      const { results, paging } = response.data;
-      const totalResults = paging.total;
+      // Filtrar las órdenes para excluir las canceladas
+      const filteredOrders = response.data.results.filter(
+        (order: Order) => order.status !== "cancelled"
+      );
+
+      // Extraer el conteo total de páginas
+      const totalResults = filteredOrders.length;
 
       // Actualizar el estado de las órdenes y el conteo de páginas
-      setOrders(results);
+      setOrders(filteredOrders);
       setPageCount(Math.ceil(totalResults / perPage));
     } catch (error) {
       console.error("Error al obtener las órdenes:", error);
@@ -53,34 +58,48 @@ const App = () => {
     }
   };
 
+  const handleCerrarSesion = () => {
+    localStorage.setItem("token", "");
+    window.location.reload();
+  };
+
   useEffect(() => {
     fetchMyOrders();
-  }, [currentPage]);
+  }, [input]);
 
   return (
-    <div className="w-full p-5">
-      <form onSubmit={handleSubmit} className="flex flex-col w-1/3 mb-5">
-        <label className="mb-2">
-          Contraseña:
-          <input
-            type="password"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="border rounded p-1 ml-2"
-          />
-        </label>
-        <button type="submit" className="bg-blue-400 p-1 rounded">
-          Enviar
-        </button>
-      </form>
+    <div className="h-screen flex flex-col justify-center items-center">
+      {orders.length === 0 && (
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center mb-5"
+        >
+          <label className="flex flex-col mb-2">
+            Contraseña:
+            <input
+              type="password"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className="border rounded p-1 mt-2"
+            />
+          </label>
+          <button
+            type="submit"
+            className="bg-orange-500 hover:bg-orange-600 px-4 py-2 w-2/3 rounded uppercase"
+          >
+            Enviar
+          </button>
+        </form>
+      )}
 
       {orders.length > 0 && (
-        <>
-          <h1 className="mb-3">Compras</h1>
-          <table className="w-full mb-3">
+        <div className="w-full">
+          <h1 className="ml-12 mb-3">Compras</h1>
+          <table className=" w-11/12 mb-10 mx-auto">
             <thead>
               <tr className="bg-gray-200 text-gray-700">
-                <th className="py-2">Número de Pedido</th>
+                <th className="py-2">N° de Pedido</th>
+                <th className="py-2">Fecha y hora</th>
                 <th className="py-2">Nombre del Vendedor</th>
                 <th className="py-2">Artículos</th>
                 <th className="py-2">Cantidad</th>
@@ -89,31 +108,45 @@ const App = () => {
             <tbody>
               {orders
                 .slice(currentPage * perPage, (currentPage + 1) * perPage)
-                .map((order: Order) =>
-                  // Iterar sobre los artículos de la orden
-                  order.order_items.map((item, itemIndex) => (
+                .map((order: Order, orderIndex, ordersArray) => {
+                  const currentCollectorId = order.payments[0].collector.id;
+                  const nextOrder = ordersArray[orderIndex + 1];
+                  const nextCollectorId = nextOrder
+                    ? nextOrder.payments[0].collector.id
+                    : null;
+                  const isDifferentCollectorAsNext =
+                    nextCollectorId && currentCollectorId !== nextCollectorId;
+
+                  return order.order_items.map((item, itemIndex) => (
                     <tr
                       key={`${order.id}-${item.item.id}`}
-                      className="border-b"
+                      className={`border-b ${
+                        isDifferentCollectorAsNext ? "border-black" : ""
+                      }`}
                     >
                       {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
                       {itemIndex === 0 && (
-                        <td className="py-2" rowSpan={order.order_items.length}>
-                          {order.id}
+                        <td className="py-2">{currentCollectorId}</td>
+                      )}
+                      {/* Agregar columna para fecha y hora */}
+                      {itemIndex === 0 && (
+                        <td className="py-2">
+                          {format(
+                            new Date(order.date_created),
+                            "dd/MM/yy HH:mm"
+                          )}
                         </td>
                       )}
                       {/* Renderizar el nombre del vendedor solo en el primer elemento de la orden */}
                       {itemIndex === 0 && (
-                        <td className="py-2" rowSpan={order.order_items.length}>
-                          {order.seller.nickname}{" "}
-                          {/* Aquí debes acceder al nombre del vendedor */}
-                        </td>
+                        <td className="py-2">{order.seller.nickname}</td>
                       )}
+
                       <td className="py-2">{item.item.title}</td>
                       <td className="py-2">{item.quantity}</td>
                     </tr>
-                  ))
-                )}
+                  ));
+                })}
             </tbody>
           </table>
 
@@ -128,7 +161,14 @@ const App = () => {
             pageClassName={"mr-2"} // Agregar margen entre los números de página
             activeClassName={"pagination__link--active"}
           />
-        </>
+          <button
+            type="submit"
+            onClick={handleCerrarSesion}
+            className="ml-12 bg-red-400 rounded p-2"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       )}
     </div>
   );
