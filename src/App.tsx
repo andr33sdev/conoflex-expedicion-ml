@@ -24,11 +24,14 @@ const App = () => {
         setPageCount(Math.ceil(ordersFromStorage.length / perPage));
       } else {
         const token = localStorage.getItem("token");
-        const response = await axios.get("http://localhost:3000/my-ordereds", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          "https://backend-expedicion-ml.vercel.app/my-ordereds",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         // Filtrar las órdenes para excluir las canceladas
         const filteredOrders = response.data.results.filter(
