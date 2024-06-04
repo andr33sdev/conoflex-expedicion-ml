@@ -17,12 +17,15 @@ const App = () => {
 
   const fetchMyOrders = async () => {
     try {
-      let ordersFromStorage = localStorage.getItem("orders");
-      if (ordersFromStorage) {
-        ordersFromStorage = JSON.parse(ordersFromStorage);
-        setOrders(ordersFromStorage);
-        setPageCount(Math.ceil(ordersFromStorage.length / perPage));
-      } else {
+      let ordersFromStorage: Order[] = []; // Se proporciona un valor predeterminado
+      const storedOrders = localStorage.getItem("orders");
+      if (storedOrders) {
+        ordersFromStorage = JSON.parse(storedOrders);
+      }
+      setOrders(ordersFromStorage);
+      setPageCount(Math.ceil(ordersFromStorage.length / perPage));
+
+      if (!storedOrders) {
         const token = localStorage.getItem("token");
         const response = await axios.get(
           "https://backend-expedicion-ml.vercel.app/my-ordereds",
