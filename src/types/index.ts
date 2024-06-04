@@ -40,6 +40,7 @@ export type OrderItem = {
     variation_attributes: any[]; // Tipo específico si está disponible
     category_id: string;
     variation_id: string | null;
+    entregado: boolean;
   };
   sale_fee: number;
   quantity: number;

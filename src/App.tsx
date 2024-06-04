@@ -17,28 +17,31 @@ const App = () => {
 
   const fetchMyOrders = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "https://backend-expedicion-ml.vercel.app/my-ordereds",
-        {
+      let ordersFromStorage = localStorage.getItem("orders");
+      if (ordersFromStorage) {
+        ordersFromStorage = JSON.parse(ordersFromStorage);
+        setOrders(ordersFromStorage);
+        setPageCount(Math.ceil(ordersFromStorage.length / perPage));
+      } else {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/my-ordereds", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        });
 
-      // Filtrar las órdenes para excluir las canceladas
-      const filteredOrders = response.data.results.filter(
-        (order: Order) => order.status !== "cancelled"
-      );
+        // Filtrar las órdenes para excluir las canceladas
+        const filteredOrders = response.data.results.filter(
+          (order: Order) => order.status !== "cancelled"
+        );
 
-      // Extraer el conteo total de páginas
-      const totalResults = filteredOrders.length;
+        // Guardar las órdenes en el almacenamiento local
+        localStorage.setItem("orders", JSON.stringify(filteredOrders));
 
-      // Actualizar el estado de las órdenes y el conteo de páginas
-      setOrders(filteredOrders);
-      console.log(filteredOrders)
-      setPageCount(Math.ceil(totalResults / perPage));
+        // Actualizar el estado de las órdenes y el conteo de páginas
+        setOrders(filteredOrders);
+        setPageCount(Math.ceil(filteredOrders.length / perPage));
+      }
     } catch (error) {
       console.error("Error al obtener las órdenes:", error);
     }
@@ -61,6 +64,7 @@ const App = () => {
 
   const handleCerrarSesion = () => {
     localStorage.setItem("token", "");
+    localStorage.setItem("orders", "");
     window.location.reload();
   };
 
@@ -111,39 +115,31 @@ const App = () => {
           </section>
           <section className="flex flex-col">
             <table className=" w-11/12 mx-auto mb-5 bg-slate-200 text-sm text-justify">
-              <caption className="caption-top mb-2">Pedidos por página: {perPage}</caption>
+              <caption className="caption-top mb-2">
+                Pedidos por página: {perPage}
+              </caption>
               <thead>
                 <tr className="bg-gray-300 text-gray-700">
                   <th className="p-2">N° de Pedido</th>
                   <th className="p-2">Fecha y hora</th>
                   <th className="p-2">Nombre del Vendedor</th>
                   <th className="p-2">Artículos</th>
+                  <th className="p-2">Color</th>
                   <th className="p-2">Cantidad</th>
+                  {/* <th className="p-2">Entregado</th> Nueva columna */}
                 </tr>
               </thead>
               <tbody>
                 {orders
                   .slice(currentPage * perPage, (currentPage + 1) * perPage)
-                  .map((order: Order, orderIndex, ordersArray) => {
-                    const currentCollectorId = order.payments[0].collector.id;
-                    const nextOrder = ordersArray[orderIndex + 1];
-                    const nextCollectorId = nextOrder
-                      ? nextOrder.payments[0].collector.id
-                      : null;
-                    const isDifferentCollectorAsNext =
-                      nextCollectorId && currentCollectorId !== nextCollectorId;
-
+                  .map((order) => {
                     return order.order_items.map((item, itemIndex) => (
                       <tr
-                        key={`${order.id}-${item.item.id}`}
-                        className={`border-b ${
-                          isDifferentCollectorAsNext ? "border-black" : ""
-                        }`}
+                        key={order.id}
+                        className={item.item.entregado ? "entregado" : ""}
                       >
                         {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
-                        {itemIndex === 0 && (
-                          <td className="p-2">{currentCollectorId}</td>
-                        )}
+                        {itemIndex === 0 && <td className="p-2">{order.id}</td>}
                         {/* Agregar columna para fecha y hora */}
                         {itemIndex === 0 && (
                           <td className="p-2">
@@ -155,11 +151,19 @@ const App = () => {
                         )}
                         {/* Renderizar el nombre del vendedor solo en el primer elemento de la orden */}
                         {itemIndex === 0 && (
-                          <td className="p-2">{order.seller.nickname}</td>
+                          <td className="p-2">{order.buyer.nickname}</td>
                         )}
 
                         <td className="p-2">{item.item.title}</td>
+                        {/* Verificar si variation_attributes está presente antes de acceder a su primer elemento */}
+                        <td className="p-2">
+                          {item.item.variation_attributes &&
+                          item.item.variation_attributes.length > 0
+                            ? item.item.variation_attributes[0].value_name
+                            : "N/A"}
+                        </td>
                         <td className="p-2">{item.quantity}</td>
+                        {/* <td className="p-2">{"Entregado / No entregado"}</td> */}
                       </tr>
                     ));
                   })}
