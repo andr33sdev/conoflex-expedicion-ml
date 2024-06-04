@@ -128,7 +128,7 @@ const App = () => {
                 <tr className="bg-gray-300 text-gray-700">
                   <th className="p-2">N° de Pedido</th>
                   <th className="p-2">Fecha y hora</th>
-                  <th className="p-2">Nombre del Vendedor</th>
+                  <th className="p-2">Comprador</th>
                   <th className="p-2">Artículos</th>
                   <th className="p-2">Color</th>
                   <th className="p-2">Cantidad</th>
