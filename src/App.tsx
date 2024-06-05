@@ -68,6 +68,11 @@ const App = () => {
     }
   };
 
+  const handleRefresh = () => {
+    localStorage.setItem("orders", "");
+    fetchMyOrders();
+  };
+
   const handleCerrarSesion = () => {
     localStorage.setItem("token", "");
     localStorage.setItem("orders", "");
@@ -111,13 +116,22 @@ const App = () => {
               alt="logo conoflex"
               className="w-72 mb-5"
             />
-            <button
-              type="submit"
-              onClick={handleCerrarSesion}
-              className="bg-red-400 hover:bg-red-500 rounded p-2 w-fit h-fit align-middle uppercase font-bold text-sm"
-            >
-              Cerrar sesión
-            </button>
+            <section>
+              <button
+                type="submit"
+                onClick={handleRefresh}
+                className="bg-blue-400 hover:bg-blue-500 rounded p-2 w-fit h-fit align-middle uppercase font-bold text-sm mr-5"
+              >
+                Actualizar
+              </button>
+              <button
+                type="submit"
+                onClick={handleCerrarSesion}
+                className="bg-red-400 hover:bg-red-500 rounded p-2 w-fit h-fit align-middle uppercase font-bold text-sm"
+              >
+                Cerrar sesión
+              </button>
+            </section>
           </section>
           <section className="flex flex-col">
             <table className=" w-11/12 mx-auto mb-5 bg-slate-200 text-sm text-justify">
