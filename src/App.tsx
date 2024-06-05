@@ -144,6 +144,7 @@ const App = () => {
                   <th className="p-2">Fecha y hora</th>
                   <th className="p-2">Comprador</th>
                   <th className="p-2">Artículos</th>
+                  <th className="p-2">Código</th>
                   <th className="p-2">Color</th>
                   <th className="p-2">Cantidad</th>
                   {/* <th className="p-2">Entregado</th> Nueva columna */}
@@ -154,10 +155,7 @@ const App = () => {
                   .slice(currentPage * perPage, (currentPage + 1) * perPage)
                   .map((order) => {
                     return order.order_items.map((item, itemIndex) => (
-                      <tr
-                        key={order.id}
-                        className={item.item.entregado ? "entregado" : ""}
-                      >
+                      <tr key={order.id}>
                         {/* Renderizar el número de pedido solo en el primer elemento de la orden */}
                         {itemIndex === 0 && <td className="p-2">{order.id}</td>}
                         {/* Agregar columna para fecha y hora */}
@@ -175,6 +173,9 @@ const App = () => {
                         )}
 
                         <td className="p-2">{item.item.title}</td>
+                        <td className="p-2">
+                          {order.order_items[0].item.seller_sku}
+                        </td>
                         {/* Verificar si variation_attributes está presente antes de acceder a su primer elemento */}
                         <td className="p-2">
                           {item.item.variation_attributes &&
